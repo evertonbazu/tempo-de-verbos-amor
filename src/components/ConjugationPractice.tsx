@@ -3,6 +3,7 @@ import React from 'react';
 import { useConjugationPractice } from '@/hooks/useConjugationPractice';
 import VerbCard from './VerbCard';
 import ScoreDisplay from './ScoreDisplay';
+import WelcomeScreen from './WelcomeScreen';
 import { 
   Card, 
   CardContent,
@@ -16,6 +17,10 @@ import { Button } from './ui/button';
 const ConjugationPractice: React.FC = () => {
   const practice = useConjugationPractice();
   
+  if (!practice.studentName) {
+    return <WelcomeScreen onStart={practice.setStudentName} />;
+  }
+
   if (practice.isGameOver) {
     return (
       <div className="max-w-md mx-auto">

@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Verb, TenseType, getRandomVerb, getRandomPronoun, pronouns } from '../utils/verbData';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ConjugationState {
   verb: Verb;
@@ -14,6 +14,7 @@ interface ConjugationState {
   attempts: number;
   maxAttempts: number;
   pronounLabel: string;
+  studentName: string | null;
 }
 
 const tenses: TenseType[] = ['presente', 'preterito', 'futuro'];
@@ -42,7 +43,8 @@ export const useConjugationPractice = () => {
       streak: 0,
       attempts: 0,
       maxAttempts: 10,
-      pronounLabel: ''
+      pronounLabel: '',
+      studentName: null
     };
   });
   
@@ -131,7 +133,32 @@ export const useConjugationPractice = () => {
     return state.verb.conjugations[state.tense][state.pronoun as keyof typeof state.verb.conjugations[typeof state.tense]];
   };
 
-  const isGameOver = state.attempts >= state.maxAttempts;
+  const setStudentName = (name: string) => {
+    setState(prev => ({
+      ...prev,
+      studentName: name
+    }));
+  };
+
+  const savePracticeResult = async () => {
+    if (!state.studentName) return;
+    
+    try {
+      await supabase.from('practice_results').insert({
+        student_name: state.studentName,
+        score: state.score,
+        attempts: state.attempts
+      });
+    } catch (error) {
+      console.error('Error saving practice results:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (state.attempts >= state.maxAttempts) {
+      savePracticeResult();
+    }
+  }, [state.attempts, state.maxAttempts, state.score, state.studentName]);
 
   return {
     ...state,
@@ -139,6 +166,7 @@ export const useConjugationPractice = () => {
     nextVerb,
     resetGame,
     getCorrectAnswer,
-    isGameOver
+    isGameOver: state.attempts >= state.maxAttempts,
+    setStudentName
   };
 };
