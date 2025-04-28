@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -34,13 +33,30 @@ const VerbCard: React.FC<VerbCardProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  const getExampleSentence = () => {
+    switch (verb.infinitive) {
+      case 'falar':
+        return 'Eu sempre **falo** com meus amigos no parque.';
+      case 'comer':
+        return 'Nós **comemos** feijoada aos sábados.';
+      case 'partir':
+        return 'O trem **parte** da estação às 8 horas.';
+      case 'ser':
+        return 'Ele **é** um ótimo professor.';
+      case 'ter':
+        return 'Eles **têm** muitos livros em casa.';
+      case 'ir':
+        return 'Você **vai** à praia todo verão.';
+      default:
+        return '';
+    }
+  };
   
-  // Focus input on mount and when verb changes
   useEffect(() => {
     inputRef.current?.focus();
   }, [verb.infinitive, pronoun]);
   
-  // Handle key press events
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
@@ -56,7 +72,6 @@ const VerbCard: React.FC<VerbCardProps> = ({
     return () => window.removeEventListener('keypress', handleKeyPress);
   }, [showAnswer, onCheck, onNext]);
   
-  // Handle input animation
   useEffect(() => {
     if (isCorrect !== null) {
       setIsAnimating(true);
@@ -98,6 +113,11 @@ const VerbCard: React.FC<VerbCardProps> = ({
         </div>
         <h3 className="text-2xl font-bold mt-1">{verb.infinitive}</h3>
         <p className="text-muted-foreground italic">{verb.translation}</p>
+        <p className="mt-3 text-base">
+          {getExampleSentence().split('**').map((part, i) => (
+            i % 2 === 0 ? part : <strong key={i} className="text-ptblue">{part}</strong>
+          ))}
+        </p>
       </div>
       
       <div className="mb-6">
