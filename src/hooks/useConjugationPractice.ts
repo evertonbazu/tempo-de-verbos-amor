@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Verb, TenseType, getRandomVerb, getRandomPronoun, pronouns } from '../utils/verbData';
 import { useToast } from '@/components/ui/use-toast';
@@ -15,18 +16,34 @@ interface ConjugationState {
   pronounLabel: string;
 }
 
-export const useConjugationPractice = (initialTense: TenseType = 'presente') => {
-  const [state, setState] = useState<ConjugationState>({
-    verb: getRandomVerb(),
-    pronoun: getRandomPronoun(),
-    isCorrect: null,
-    showAnswer: false,
-    tense: initialTense,
-    score: 0,
-    streak: 0,
-    attempts: 0,
-    maxAttempts: 10,
-    pronounLabel: ''
+const tenses: TenseType[] = ['presente', 'preterito', 'futuro'];
+let lastTenseIndex = -1;
+
+const getNextTense = (): TenseType => {
+  // Cycle through tenses in order but start at random position
+  if (lastTenseIndex === -1) {
+    lastTenseIndex = Math.floor(Math.random() * 3);
+  } else {
+    lastTenseIndex = (lastTenseIndex + 1) % 3;
+  }
+  return tenses[lastTenseIndex];
+};
+
+export const useConjugationPractice = () => {
+  const [state, setState] = useState<ConjugationState>(() => {
+    const initialTense = getNextTense();
+    return {
+      verb: getRandomVerb(),
+      pronoun: getRandomPronoun(),
+      isCorrect: null,
+      showAnswer: false,
+      tense: initialTense,
+      score: 0,
+      streak: 0,
+      attempts: 0,
+      maxAttempts: 10,
+      pronounLabel: ''
+    };
   });
   
   const { toast } = useToast();
@@ -75,6 +92,7 @@ export const useConjugationPractice = (initialTense: TenseType = 'presente') => 
   const nextVerb = () => {
     const newVerb = getRandomVerb();
     const newPronoun = getRandomPronoun();
+    const nextTense = getNextTense();
     const selectedPronoun = pronouns.find(p => p.id === newPronoun);
     
     setState({
@@ -82,21 +100,15 @@ export const useConjugationPractice = (initialTense: TenseType = 'presente') => 
       verb: newVerb,
       pronoun: newPronoun,
       pronounLabel: selectedPronoun ? selectedPronoun.label : '',
-      isCorrect: null,
-      showAnswer: false
-    });
-  };
-
-  const setTense = (newTense: TenseType) => {
-    setState({
-      ...state,
-      tense: newTense,
+      tense: nextTense,
       isCorrect: null,
       showAnswer: false
     });
   };
 
   const resetGame = () => {
+    lastTenseIndex = -1; // Reset tense cycle
+    const initialTense = getNextTense();
     const newVerb = getRandomVerb();
     const newPronoun = getRandomPronoun();
     const selectedPronoun = pronouns.find(p => p.id === newPronoun);
@@ -125,7 +137,6 @@ export const useConjugationPractice = (initialTense: TenseType = 'presente') => 
     ...state,
     checkAnswer,
     nextVerb,
-    setTense,
     resetGame,
     getCorrectAnswer,
     isGameOver

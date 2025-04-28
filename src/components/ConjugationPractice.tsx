@@ -2,9 +2,7 @@
 import React from 'react';
 import { useConjugationPractice } from '@/hooks/useConjugationPractice';
 import VerbCard from './VerbCard';
-import TenseSelector from './TenseSelector';
 import ScoreDisplay from './ScoreDisplay';
-import { Button } from '@/components/ui/button';
 import { 
   Card, 
   CardContent,
@@ -13,6 +11,7 @@ import {
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
+import { Button } from './ui/button';
 
 const ConjugationPractice: React.FC = () => {
   const practice = useConjugationPractice();
@@ -60,23 +59,15 @@ const ConjugationPractice: React.FC = () => {
         maxAttempts={practice.maxAttempts}
       />
       
-      <TenseSelector
-        selectedTense={practice.tense}
-        onTenseChange={practice.setTense}
-      />
-      
       <VerbCard
         verb={practice.verb}
         pronoun={practice.pronoun}
         pronounLabel={practice.pronounLabel}
         tense={practice.tense}
-        userInput={practice.userInput}
         isCorrect={practice.isCorrect}
         showAnswer={practice.showAnswer}
-        onInputChange={practice.updateUserInput}
         onCheck={practice.checkAnswer}
         onNext={practice.nextVerb}
-        correctAnswer={practice.getCorrectAnswer()}
       />
     </div>
   );

@@ -13,7 +13,6 @@ interface VerbCardProps {
   showAnswer: boolean;
   onCheck: (selectedTense: TenseType) => void;
   onNext: () => void;
-  correctAnswer: string;
 }
 
 const VerbCard: React.FC<VerbCardProps> = ({
