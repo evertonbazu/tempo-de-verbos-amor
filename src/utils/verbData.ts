@@ -191,37 +191,6 @@ export const verbs: Verb[] = [
         eles: 'terão'
       }
     }
-  },
-  {
-    infinitive: 'ir',
-    translation: 'to go',
-    grupo: 'irregular',
-    conjugations: {
-      presente: {
-        eu: 'vou',
-        tu: 'vais',
-        ele: 'vai',
-        nos: 'vamos',
-        vos: 'ides',
-        eles: 'vão'
-      },
-      preterito: {
-        eu: 'fui',
-        tu: 'foste',
-        ele: 'foi',
-        nos: 'fomos',
-        vos: 'fostes',
-        eles: 'foram'
-      },
-      futuro: {
-        eu: 'irei',
-        tu: 'irás',
-        ele: 'irá',
-        nos: 'iremos',
-        vos: 'ireis',
-        eles: 'irão'
-      }
-    }
   }
 ];
 
@@ -232,3 +201,4 @@ export const getRandomVerb = (): Verb => {
 export const getRandomPronoun = (): string => {
   return pronouns[Math.floor(Math.random() * pronouns.length)].id;
 };
+
