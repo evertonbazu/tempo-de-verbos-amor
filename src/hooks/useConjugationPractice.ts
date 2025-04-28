@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Verb, TenseType, getRandomVerb, getRandomPronoun, pronouns } from '../utils/verbData';
 import { useToast } from '@/components/ui/use-toast';
@@ -6,7 +5,6 @@ import { useToast } from '@/components/ui/use-toast';
 interface ConjugationState {
   verb: Verb;
   pronoun: string;
-  userInput: string;
   isCorrect: boolean | null;
   showAnswer: boolean;
   tense: TenseType;
@@ -21,7 +19,6 @@ export const useConjugationPractice = (initialTense: TenseType = 'presente') => 
   const [state, setState] = useState<ConjugationState>({
     verb: getRandomVerb(),
     pronoun: getRandomPronoun(),
-    userInput: '',
     isCorrect: null,
     showAnswer: false,
     tense: initialTense,
@@ -42,11 +39,8 @@ export const useConjugationPractice = (initialTense: TenseType = 'presente') => 
     }));
   }, [state.pronoun]);
 
-  const checkAnswer = () => {
-    if (state.userInput.trim() === '') return;
-    
-    const correctAnswer = state.verb.conjugations[state.tense][state.pronoun as keyof typeof state.verb.conjugations[typeof state.tense]];
-    const isCorrect = state.userInput.trim().toLowerCase() === correctAnswer.toLowerCase();
+  const checkAnswer = (selectedTense: TenseType) => {
+    const isCorrect = selectedTense === state.tense;
     
     let newScore = state.score;
     let newStreak = state.streak;
@@ -63,7 +57,7 @@ export const useConjugationPractice = (initialTense: TenseType = 'presente') => 
       newStreak = 0;
       toast({
         title: "Incorreto",
-        description: `A resposta correta é: ${correctAnswer}`,
+        description: `A resposta correta é: ${state.tense}`,
         variant: "destructive",
       });
     }
@@ -88,7 +82,6 @@ export const useConjugationPractice = (initialTense: TenseType = 'presente') => 
       verb: newVerb,
       pronoun: newPronoun,
       pronounLabel: selectedPronoun ? selectedPronoun.label : '',
-      userInput: '',
       isCorrect: null,
       showAnswer: false
     });
@@ -98,17 +91,8 @@ export const useConjugationPractice = (initialTense: TenseType = 'presente') => 
     setState({
       ...state,
       tense: newTense,
-      userInput: '',
       isCorrect: null,
       showAnswer: false
-    });
-  };
-
-  const updateUserInput = (input: string) => {
-    setState({
-      ...state,
-      userInput: input,
-      isCorrect: null
     });
   };
 
@@ -121,7 +105,6 @@ export const useConjugationPractice = (initialTense: TenseType = 'presente') => 
       verb: newVerb,
       pronoun: newPronoun,
       pronounLabel: selectedPronoun ? selectedPronoun.label : '',
-      userInput: '',
       isCorrect: null,
       showAnswer: false,
       tense: initialTense,
@@ -143,7 +126,6 @@ export const useConjugationPractice = (initialTense: TenseType = 'presente') => 
     checkAnswer,
     nextVerb,
     setTense,
-    updateUserInput,
     resetGame,
     getCorrectAnswer,
     isGameOver

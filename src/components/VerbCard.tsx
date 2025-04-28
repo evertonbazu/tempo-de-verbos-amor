@@ -1,6 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Input } from "@/components/ui/input";
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Verb, TenseType } from '@/utils/verbData';
@@ -10,30 +9,21 @@ interface VerbCardProps {
   pronoun: string;
   pronounLabel: string;
   tense: TenseType;
-  userInput: string;
   isCorrect: boolean | null;
   showAnswer: boolean;
-  onInputChange: (value: string) => void;
-  onCheck: () => void;
+  onCheck: (selectedTense: TenseType) => void;
   onNext: () => void;
   correctAnswer: string;
 }
 
 const VerbCard: React.FC<VerbCardProps> = ({
   verb,
-  pronoun,
   tense,
-  userInput,
   isCorrect,
   showAnswer,
-  onInputChange,
   onCheck,
-  onNext,
-  correctAnswer
+  onNext
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-
   const getExampleSentence = () => {
     switch (verb.infinitive) {
       case 'falar':
@@ -50,33 +40,6 @@ const VerbCard: React.FC<VerbCardProps> = ({
         return '';
     }
   };
-  
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, [verb.infinitive, pronoun]);
-  
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        if (!showAnswer) {
-          onCheck();
-        } else {
-          onNext();
-        }
-      }
-    };
-    
-    window.addEventListener('keypress', handleKeyPress);
-    return () => window.removeEventListener('keypress', handleKeyPress);
-  }, [showAnswer, onCheck, onNext]);
-  
-  useEffect(() => {
-    if (isCorrect !== null) {
-      setIsAnimating(true);
-      const timer = setTimeout(() => setIsAnimating(false), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isCorrect]);
 
   return (
     <div className="verb-card space-y-6">
@@ -87,54 +50,57 @@ const VerbCard: React.FC<VerbCardProps> = ({
       </p>
       
       <div className="flex flex-col items-center gap-4">
-        <div className={cn(
-          "w-full max-w-xs transition-all",
-          isAnimating && (isCorrect ? "animate-bounce-gentle" : "animate-shake")
-        )}>
-          <Input
-            ref={inputRef}
-            type="text"
-            value={userInput}
-            onChange={(e) => onInputChange(e.target.value)}
-            disabled={showAnswer}
-            className={cn(
-              "text-center text-lg",
-              isCorrect === null ? "input-neutral" :
-              isCorrect ? "input-correct" : "input-incorrect"
-            )}
-            placeholder="Digite a conjugação"
-          />
-        </div>
-        
-        {showAnswer && !isCorrect && (
-          <p className="text-destructive font-medium">
-            Resposta correta: <span className="font-bold">{correctAnswer}</span>
-          </p>
+        {!showAnswer ? (
+          <div className="flex gap-2 justify-center">
+            <Button 
+              onClick={() => onCheck('presente')}
+              variant="outline"
+              size="lg"
+              className={cn(
+                "font-medium",
+                isCorrect === null ? "" : 
+                isCorrect && tense === 'presente' ? "bg-ptgreen text-white hover:bg-ptgreen-dark" : ""
+              )}
+            >
+              Presente
+            </Button>
+            <Button 
+              onClick={() => onCheck('preterito')}
+              variant="outline"
+              size="lg"
+              className={cn(
+                "font-medium",
+                isCorrect === null ? "" : 
+                isCorrect && tense === 'preterito' ? "bg-ptgreen text-white hover:bg-ptgreen-dark" : ""
+              )}
+            >
+              Pretérito
+            </Button>
+            <Button 
+              onClick={() => onCheck('futuro')}
+              variant="outline"
+              size="lg"
+              className={cn(
+                "font-medium",
+                isCorrect === null ? "" : 
+                isCorrect && tense === 'futuro' ? "bg-ptgreen text-white hover:bg-ptgreen-dark" : ""
+              )}
+            >
+              Futuro
+            </Button>
+          </div>
+        ) : (
+          <Button 
+            onClick={onNext}
+            className="bg-ptgreen hover:bg-ptgreen-dark"
+            size="lg"
+          >
+            Próximo
+          </Button>
         )}
-        
-        <div>
-          {!showAnswer ? (
-            <Button 
-              onClick={onCheck}
-              className="bg-ptblue hover:bg-ptblue-dark"
-              size="lg"
-            >
-              Verificar
-            </Button>
-          ) : (
-            <Button 
-              onClick={onNext}
-              className="bg-ptgreen hover:bg-ptgreen-dark"
-              size="lg"
-            >
-              Próximo
-            </Button>
-          )}
-        </div>
       </div>
     </div>
   );
 };
 
 export default VerbCard;
-
