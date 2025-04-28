@@ -125,7 +125,8 @@ export const useConjugationPractice = () => {
       score: 0,
       streak: 0,
       attempts: 0,
-      maxAttempts: 10
+      maxAttempts: 10,
+      studentName: state.studentName // Keep the student name when resetting
     });
   };
 
