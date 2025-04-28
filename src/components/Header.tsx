@@ -11,7 +11,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
     <header className={cn("py-6 text-center", className)}>
       <div className="container mx-auto">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-ptblue">
-          Tempo de Verbos <span className="text-ptgreen">Amor</span>
+          Jogo dos Verbos dos Prof. Everton E Edilaine!!!
         </h1>
         <p className="mt-3 text-muted-foreground max-w-md mx-auto">
           Pratique suas conjugações de verbos em português
