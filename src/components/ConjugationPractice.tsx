@@ -113,6 +113,8 @@ const ConjugationPractice: React.FC = () => {
         showAnswer={practice.showAnswer}
         onCheck={practice.checkAnswer}
         onNext={practice.nextVerb}
+        sentence={practice.currentSentence.sentence}
+        highlightedVerb={practice.currentSentence.verb}
       />
     </div>
   );

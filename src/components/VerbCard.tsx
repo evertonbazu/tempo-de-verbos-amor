@@ -13,6 +13,8 @@ interface VerbCardProps {
   showAnswer: boolean;
   onCheck: (selectedTense: TenseType) => void;
   onNext: () => void;
+  sentence: string;
+  highlightedVerb: string;
 }
 
 const VerbCard: React.FC<VerbCardProps> = ({
@@ -21,29 +23,23 @@ const VerbCard: React.FC<VerbCardProps> = ({
   isCorrect,
   showAnswer,
   onCheck,
-  onNext
+  onNext,
+  sentence,
+  highlightedVerb
 }) => {
-  const getExampleSentence = () => {
-    switch (verb.infinitive) {
-      case 'falar':
-        return 'Eu sempre **falo** com meus amigos no parque.';
-      case 'comer':
-        return 'Nós **comemos** feijoada aos sábados.';
-      case 'partir':
-        return 'O trem **parte** da estação às 8 horas.';
-      case 'ser':
-        return 'Ele **é** um ótimo professor.';
-      case 'ter':
-        return 'Eles **têm** muitos livros em casa.';
-      default:
-        return '';
-    }
+  const formatSentence = () => {
+    if (!sentence || !highlightedVerb) return '';
+    
+    return sentence.replace(
+      highlightedVerb, 
+      `**${highlightedVerb}**`
+    );
   };
 
   return (
     <div className="verb-card space-y-6">
       <p className="text-lg text-center">
-        {getExampleSentence().split('**').map((part, i) => (
+        {formatSentence().split('**').map((part, i) => (
           i % 2 === 0 ? part : <strong key={i} className="text-ptblue">{part}</strong>
         ))}
       </p>
@@ -73,7 +69,7 @@ const VerbCard: React.FC<VerbCardProps> = ({
                 isCorrect && tense === 'preterito' ? "bg-ptgreen text-white hover:bg-ptgreen-dark" : ""
               )}
             >
-              Pretérito
+              Passado
             </Button>
             <Button 
               onClick={() => onCheck('futuro')}

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { cn } from '@/lib/utils';
 interface HeaderProps {
@@ -9,8 +10,6 @@ const Header: React.FC<HeaderProps> = ({
   return <header className={cn("py-6 text-center", className)}>
       <div className="container mx-auto">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-ptblue">Jogo dos Verbos</h1>
-        <p className="mt-3 text-muted-foreground max-w-md mx-auto">
-      </p>
       </div>
     </header>;
 };

@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
-import { Verb, TenseType, getRandomVerb, getRandomPronoun, pronouns } from '../utils/verbData';
-import { useToast } from '@/components/ui/use-toast';
+import { Verb, TenseType, getRandomVerb, getRandomPronoun, pronouns, getRandomSentence, SentenceExample } from '../utils/verbData';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ConjugationState {
@@ -15,36 +16,25 @@ interface ConjugationState {
   maxAttempts: number;
   pronounLabel: string;
   studentName: string | null;
+  currentSentence: SentenceExample;
 }
 
-const tenses: TenseType[] = ['presente', 'preterito', 'futuro'];
-let lastTenseIndex = -1;
-
-const getNextTense = (): TenseType => {
-  // Cycle through tenses in order but start at random position
-  if (lastTenseIndex === -1) {
-    lastTenseIndex = Math.floor(Math.random() * 3);
-  } else {
-    lastTenseIndex = (lastTenseIndex + 1) % 3;
-  }
-  return tenses[lastTenseIndex];
-};
-
-export const useConjugationPractice = () => {
+const useConjugationPractice = () => {
   const [state, setState] = useState<ConjugationState>(() => {
-    const initialTense = getNextTense();
+    const initialSentence = getRandomSentence();
     return {
       verb: getRandomVerb(),
       pronoun: getRandomPronoun(),
       isCorrect: null,
       showAnswer: false,
-      tense: initialTense,
+      tense: initialSentence.tense,
       score: 0,
       streak: 0,
       attempts: 0,
       maxAttempts: 10,
       pronounLabel: '',
-      studentName: null
+      studentName: null,
+      currentSentence: initialSentence
     };
   });
   
@@ -59,7 +49,7 @@ export const useConjugationPractice = () => {
   }, [state.pronoun]);
 
   const checkAnswer = (selectedTense: TenseType) => {
-    const isCorrect = selectedTense === state.tense;
+    const isCorrect = selectedTense === state.currentSentence.tense;
     
     let newScore = state.score;
     let newStreak = state.streak;
@@ -76,7 +66,9 @@ export const useConjugationPractice = () => {
       newStreak = 0;
       toast({
         title: "Incorreto",
-        description: `A resposta correta é: ${state.tense}`,
+        description: `A resposta correta é: ${state.currentSentence.tense === 'presente' ? 'Presente' : 
+                                            state.currentSentence.tense === 'preterito' ? 'Passado' : 
+                                            'Futuro'}`,
         variant: "destructive",
       });
     }
@@ -92,25 +84,21 @@ export const useConjugationPractice = () => {
   };
 
   const nextVerb = () => {
-    const newVerb = getRandomVerb();
-    const newPronoun = getRandomPronoun();
-    const nextTense = getNextTense();
-    const selectedPronoun = pronouns.find(p => p.id === newPronoun);
+    const newSentence = getRandomSentence();
+    const selectedPronoun = pronouns.find(p => p.id === state.pronoun);
     
     setState({
       ...state,
-      verb: newVerb,
-      pronoun: newPronoun,
-      pronounLabel: selectedPronoun ? selectedPronoun.label : '',
-      tense: nextTense,
+      verb: getRandomVerb(),
+      tense: newSentence.tense,
       isCorrect: null,
-      showAnswer: false
+      showAnswer: false,
+      currentSentence: newSentence
     });
   };
 
   const resetGame = () => {
-    lastTenseIndex = -1; // Reset tense cycle
-    const initialTense = getNextTense();
+    const initialSentence = getRandomSentence();
     const newVerb = getRandomVerb();
     const newPronoun = getRandomPronoun();
     const selectedPronoun = pronouns.find(p => p.id === newPronoun);
@@ -121,12 +109,13 @@ export const useConjugationPractice = () => {
       pronounLabel: selectedPronoun ? selectedPronoun.label : '',
       isCorrect: null,
       showAnswer: false,
-      tense: initialTense,
+      tense: initialSentence.tense,
       score: 0,
       streak: 0,
       attempts: 0,
       maxAttempts: 10,
-      studentName: state.studentName // Keep the student name when resetting
+      studentName: state.studentName, // Keep the student name when resetting
+      currentSentence: initialSentence
     });
   };
 
@@ -171,3 +160,5 @@ export const useConjugationPractice = () => {
     setStudentName
   };
 };
+
+export { useConjugationPractice };
