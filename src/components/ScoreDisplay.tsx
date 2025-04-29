@@ -8,18 +8,20 @@ interface ScoreDisplayProps {
   streak: number;
   attempts: number;
   maxAttempts: number;
+  className?: string;
 }
 
 const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
   score,
   streak,
   attempts,
-  maxAttempts
+  maxAttempts,
+  className
 }) => {
   const progressPercent = (attempts / maxAttempts) * 100;
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-6">
+    <div className={`bg-white rounded-lg shadow p-4 ${className}`}>
       <div className="flex justify-between items-center mb-2">
         <div>
           <h3 className="text-sm font-medium text-muted-foreground">Pontuação</h3>

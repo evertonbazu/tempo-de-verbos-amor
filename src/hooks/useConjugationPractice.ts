@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Verb, TenseType, getRandomVerb, getRandomPronoun, pronouns, getRandomSentence, SentenceExample } from '../utils/verbData';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,7 +17,14 @@ interface ConjugationState {
   pronounLabel: string;
   studentName: string | null;
   currentSentence: SentenceExample;
+  lives: number;
+  timeRemaining: number;
+  isTimerRunning: boolean;
+  sentencesAnswered: number;
 }
+
+const INITIAL_LIVES = 3;
+const INITIAL_TIME = 90;
 
 const useConjugationPractice = () => {
   const [state, setState] = useState<ConjugationState>(() => {
@@ -34,11 +41,16 @@ const useConjugationPractice = () => {
       maxAttempts: 10,
       pronounLabel: '',
       studentName: null,
-      currentSentence: initialSentence
+      currentSentence: initialSentence,
+      lives: INITIAL_LIVES,
+      timeRemaining: INITIAL_TIME,
+      isTimerRunning: false,
+      sentencesAnswered: 0
     };
   });
   
   const { toast } = useToast();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const selectedPronoun = pronouns.find(p => p.id === state.pronoun);
@@ -48,11 +60,42 @@ const useConjugationPractice = () => {
     }));
   }, [state.pronoun]);
 
+  // Timer effect
+  useEffect(() => {
+    if (state.isTimerRunning && state.timeRemaining > 0) {
+      timerRef.current = setInterval(() => {
+        setState(prev => ({
+          ...prev,
+          timeRemaining: prev.timeRemaining - 1
+        }));
+      }, 1000);
+    } else if (state.timeRemaining <= 0 && state.isTimerRunning) {
+      // Time's up!
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      setState(prev => ({
+        ...prev,
+        isTimerRunning: false
+      }));
+      
+      savePracticeResult();
+    }
+    
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [state.isTimerRunning, state.timeRemaining]);
+
   const checkAnswer = (selectedTense: TenseType) => {
     const isCorrect = selectedTense === state.currentSentence.tense;
     
     let newScore = state.score;
     let newStreak = state.streak;
+    let newLives = state.lives;
+    let newSentencesAnswered = state.sentencesAnswered + 1;
     
     if (isCorrect) {
       newScore += 10;
@@ -64,6 +107,8 @@ const useConjugationPractice = () => {
       });
     } else {
       newStreak = 0;
+      newLives -= 1;
+      
       toast({
         title: "Incorreto",
         description: `A resposta correta é: ${state.currentSentence.tense === 'presente' ? 'Presente' : 
@@ -71,6 +116,24 @@ const useConjugationPractice = () => {
                                             'Futuro'}`,
         variant: "destructive",
       });
+      
+      // If no lives left, end the game
+      if (newLives <= 0) {
+        setState({
+          ...state,
+          isCorrect,
+          showAnswer: true,
+          score: newScore,
+          streak: newStreak,
+          attempts: state.attempts + 1,
+          lives: newLives,
+          sentencesAnswered: newSentencesAnswered,
+          isTimerRunning: false
+        });
+        
+        savePracticeResult();
+        return;
+      }
     }
     
     setState({
@@ -79,7 +142,9 @@ const useConjugationPractice = () => {
       showAnswer: true,
       score: newScore,
       streak: newStreak,
-      attempts: state.attempts + 1
+      attempts: state.attempts + 1,
+      lives: newLives,
+      sentencesAnswered: newSentencesAnswered
     });
   };
 
@@ -103,6 +168,10 @@ const useConjugationPractice = () => {
     const newPronoun = getRandomPronoun();
     const selectedPronoun = pronouns.find(p => p.id === newPronoun);
     
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
     setState({
       verb: newVerb,
       pronoun: newPronoun,
@@ -115,7 +184,11 @@ const useConjugationPractice = () => {
       attempts: 0,
       maxAttempts: 10,
       studentName: state.studentName, // Keep the student name when resetting
-      currentSentence: initialSentence
+      currentSentence: initialSentence,
+      lives: INITIAL_LIVES,
+      timeRemaining: INITIAL_TIME,
+      isTimerRunning: false,
+      sentencesAnswered: 0
     });
   };
 
@@ -126,7 +199,8 @@ const useConjugationPractice = () => {
   const setStudentName = (name: string) => {
     setState(prev => ({
       ...prev,
-      studentName: name
+      studentName: name,
+      isTimerRunning: true // Start timer when name is set
     }));
   };
 
@@ -137,7 +211,8 @@ const useConjugationPractice = () => {
       await supabase.from('practice_results').insert({
         student_name: state.studentName,
         score: state.score,
-        attempts: state.attempts
+        attempts: state.attempts,
+        sentences_answered: state.sentencesAnswered
       });
     } catch (error) {
       console.error('Error saving practice results:', error);
@@ -145,10 +220,10 @@ const useConjugationPractice = () => {
   };
 
   useEffect(() => {
-    if (state.attempts >= state.maxAttempts) {
+    if (state.lives <= 0 || state.timeRemaining <= 0) {
       savePracticeResult();
     }
-  }, [state.attempts, state.maxAttempts, state.score, state.studentName]);
+  }, [state.lives, state.timeRemaining]);
 
   return {
     ...state,
@@ -156,7 +231,7 @@ const useConjugationPractice = () => {
     nextVerb,
     resetGame,
     getCorrectAnswer,
-    isGameOver: state.attempts >= state.maxAttempts,
+    isGameOver: state.lives <= 0 || state.timeRemaining <= 0,
     setStudentName
   };
 };

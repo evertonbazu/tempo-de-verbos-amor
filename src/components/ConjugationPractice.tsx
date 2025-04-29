@@ -3,6 +3,7 @@ import React from 'react';
 import { useConjugationPractice } from '@/hooks/useConjugationPractice';
 import VerbCard from './VerbCard';
 import ScoreDisplay from './ScoreDisplay';
+import GameStats from './GameStats';
 import WelcomeScreen from './WelcomeScreen';
 import LeaderboardTable from './LeaderboardTable';
 import { 
@@ -44,7 +45,14 @@ const ConjugationPractice: React.FC = () => {
   }
 
   if (practice.isGameOver) {
-    const percentage = (practice.score / (practice.maxAttempts * 10)) * 100;
+    let gameOverReason = "";
+    if (practice.lives <= 0) {
+      gameOverReason = "Você perdeu todas as vidas!";
+    } else if (practice.timeRemaining <= 0) {
+      gameOverReason = "O tempo acabou!";
+    }
+    
+    const percentage = (practice.score / (practice.attempts * 10)) * 100;
     const message = getEncouragingMessage(percentage);
 
     return (
@@ -53,7 +61,7 @@ const ConjugationPractice: React.FC = () => {
           <CardHeader>
             <CardTitle>Prática Concluída!</CardTitle>
             <CardDescription>
-              Vamos ver como você se saiu
+              {gameOverReason}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -62,7 +70,7 @@ const ConjugationPractice: React.FC = () => {
                 {practice.score} pontos
               </div>
               <p className="text-muted-foreground mb-4">
-                Você completou {practice.attempts} conjugações!
+                Você completou {practice.sentencesAnswered} frases!
               </p>
               <p className="text-xl font-medium text-ptgreen mb-8">
                 {message}
@@ -97,11 +105,18 @@ const ConjugationPractice: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto px-4">
+      <GameStats 
+        lives={practice.lives}
+        timeRemaining={practice.timeRemaining}
+        className="mb-3"
+      />
+      
       <ScoreDisplay 
         score={practice.score}
         streak={practice.streak}
         attempts={practice.attempts}
         maxAttempts={practice.maxAttempts}
+        className="mb-6"
       />
       
       <VerbCard
