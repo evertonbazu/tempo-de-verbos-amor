@@ -21,7 +21,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
   return (
     <Card className="max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-center">Bem-vindo ao jogos dos Verbos do 5º Ano</CardTitle>
+        <CardTitle className="text-center">Bem-vindo ao Jogo dos Verbos dos Profs Everton e Edilaine</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
